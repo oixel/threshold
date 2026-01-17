@@ -1,24 +1,24 @@
-import {App, PluginSettingTab, Setting} from "obsidian";
-import MyPlugin from "./main";
+import { App, PluginSettingTab, Setting } from "obsidian";
+import Threshold from "./main";
 
-export interface MyPluginSettings {
+export interface ThresholdSettings {
 	mySetting: string;
 }
 
-export const DEFAULT_SETTINGS: MyPluginSettings = {
+export const DEFAULT_SETTINGS: ThresholdSettings = {
 	mySetting: 'default'
 }
 
 export class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
+	plugin: Threshold;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: Threshold) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
 
 	display(): void {
-		const {containerEl} = this;
+		const { containerEl } = this;
 
 		containerEl.empty();
 
