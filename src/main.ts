@@ -128,7 +128,7 @@ export default class Threshold extends Plugin {
 		this.registerEvent(
 			this.app.workspace.on('editor-menu', (menu: Menu, editor: Editor, view: MarkdownView) => {
 				const imageSnapshot = this.clickedImage;
-				this.clickedImage = null;  // Clear clicked image after the menu gets built
+				this.clickedImage = null;  // Wipe clicked image after the menu gets built
 
 				// Only attach "Apply threshold" menu option if an image was clicked in recent time (500 ms)
 				if (imageSnapshot && Date.now() - imageSnapshot.timestamp < 500) {
@@ -156,9 +156,35 @@ export default class Threshold extends Plugin {
 }
 
 export class ThresholdModal extends Modal {
-	constructor(app: App, private plugin: Threshold, file: TFile) {
+	constructor(app: App, private plugin: Threshold, private file: TFile) {
 		super(app);
-		this.titleEl.setText(`Apply Threshold: ${file.name}`);
-		this.setContent('Look at me, I\'m a modal! 👀')
+	}
+
+	// Once the DOM is ready, apply its content
+	onOpen() {
+		this.titleEl.setText("Apply threshold");
+		this.titleEl.addClass("threshold-modal-title");
+
+		// Create image preview with the right-clicked image
+		const img = this.contentEl.createEl("img");
+		const src = this.app.vault.getResourcePath(this.file);
+		img.setAttribute("src", src);
+		img.addClass("threshold-modal-preview-image");
+
+		const inputRowDiv = this.contentEl.createDiv();
+		inputRowDiv.addClass("threshold-modal-input-row-div");
+
+		const label = this.contentEl.createEl("b", { text: "Output file: " })
+		label.addClass("threshold-modal-input-label");
+		inputRowDiv.appendChild(label);
+
+		const nameInput = this.contentEl.createEl("input", { type: "text", value: this.file.name });
+		nameInput.addClass("threshold-modal-input");
+		inputRowDiv.appendChild(nameInput);
+	}
+
+	// Clean up to avoid memory leaks
+	onClose(): void {
+		this.contentEl.empty();
 	}
 }

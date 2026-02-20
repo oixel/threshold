@@ -1,8 +1,19 @@
-/*
+.threshold-modal-title {}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+.threshold-modal-preview-image {
+    max-width: 100%;
+}
 
-If your plugin does not need CSS, delete this file.
+.threshold-modal-input-row-div {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
 
-*/
+.threshold-modal-input-label {}
+
+.threshold-modal-input {
+    flex-grow: 1;
+}
