@@ -24,3 +24,11 @@
 .threshold-modal-input {
     flex-grow: 1;
 }
+
+.threshold-modal-apply-button {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    cursor: pointer;
+    width: 85%;
+    align-self: center;
+}

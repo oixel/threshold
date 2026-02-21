@@ -163,7 +163,7 @@ export class ThresholdModal extends Modal {
 	// Once the DOM is ready, apply its content
 	onOpen() {
 		this.modalEl.addClass("threshold-modal");
-		this.titleEl.setText("Apply threshold");
+		this.titleEl.setText("Applying threshold filter");
 
 		// Create image preview with the right-clicked image
 		this.contentEl.createEl("img", {
@@ -212,6 +212,11 @@ export class ThresholdModal extends Modal {
 			type: "text",
 			value: this.file.name,
 			cls: "threshold-modal-input"
+		});
+
+		const applyButton = this.contentEl.createEl("button", {
+			text: "Apply",
+			cls: "threshold-modal-apply-button"
 		});
 	}
 
