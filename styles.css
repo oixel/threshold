@@ -35,8 +35,8 @@
 
 .threshold-modal-apply-button,
 .threshold-modal-overwrite-button {
-    background-color: var(--interactive-accent);
-    color: var(--text-on-accent);
+    background-color: var(--interactive-accent) !important;
+    color: var(--text-on-accent) !important;
 }
 
 .threshold-modal-apply-button {

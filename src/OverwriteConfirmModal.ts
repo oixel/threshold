@@ -10,7 +10,7 @@ export class OverwriteConfirmModal extends Modal {
         this.titleEl.setText("File already exists");
         this.contentEl.createEl("p", { text: "A file with this name already exists. Are you sure you wish to overwrite it?" });
 
-        const buttonRow = this.contentEl.createDiv({ cls: ".threshold-modal-row-div" });
+        const buttonRow = this.contentEl.createDiv({ cls: "threshold-modal-row-div" });
 
         // Confirm overwrite button calls apply threshold method in the ThresholdModal
         buttonRow.createEl("button", {
