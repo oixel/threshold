@@ -13,7 +13,7 @@
     display: none;
 }
 
-.threshold-modal-input-row-div {
+.threshold-modal-row-div {
     display: flex;
     width: 100%;
     justify-content: center;
@@ -29,10 +29,17 @@
     flex-grow: 1;
 }
 
-.threshold-modal-apply-button {
+.modal-content button {
+    cursor: pointer;
+}
+
+.threshold-modal-apply-button,
+.threshold-modal-overwrite-button {
     background-color: var(--interactive-accent);
     color: var(--text-on-accent);
-    cursor: pointer;
-    width: 85%;
+}
+
+.threshold-modal-apply-button {
+    width: 90%;
     align-self: center;
 }

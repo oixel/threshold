@@ -1,0 +1,139 @@
+import { TFile, Modal, App } from 'obsidian';
+import { OverwriteConfirmModal } from 'OverwriteConfirmModal';
+import Threshold from 'main';
+
+export class ThresholdModal extends Modal {
+    constructor(app: App, private plugin: Threshold, private file: TFile) {
+        super(app);
+    }
+
+    // Once the DOM is ready, apply its content
+    onOpen() {
+        this.modalEl.addClass("threshold-modal");
+        this.titleEl.setText("Apply threshold filter");
+
+        // Create image preview with the right-clicked image
+        const img = this.contentEl.createEl("img", {
+            attr: { src: this.app.vault.getResourcePath(this.file) },
+            cls: "threshold-modal-preview-image"
+        });
+
+        const canvas = this.contentEl.createEl("canvas", { cls: "threshold-modal-canvas" });
+        const context = canvas.getContext("2d")!;  // context is certain
+
+        let cleanImageData: ImageData;
+
+        img.addEventListener("load", () => {
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+
+            // Draw the preview image onto the hidden Canvas element
+            context?.drawImage(img, 0, 0);
+            cleanImageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+            // Automatically apply basic threshold filter to image
+            applyThreshold(128);
+        }, { once: true });
+
+        // Render the applied threshold filter to the preview image
+        const applyThreshold = (cutoff: number) => {
+            // Avoid applying threshold if the image has not been loaded
+            if (!cleanImageData) return;
+
+            // Create a new pixel data array to avoid overwriting the original image's
+            const imageData = new ImageData(
+                new Uint8ClampedArray(cleanImageData.data),
+                cleanImageData.width,
+                cleanImageData.height
+            );
+            const data = imageData.data
+
+            // Check for pixel luminance and apply threshold to every pixel in the image that is greater than the cutoff
+            for (let i = 0; i < data.length; i += 4) {
+                // Grab pixel's RGB values (if present or default to 0 if not)
+                const r = data[i] ?? 0;
+                const g = data[i + 1] ?? 0;
+                const b = data[i + 2] ?? 0;
+
+                // Equation for converting a RGB value to its perceived luminance
+                // Source: https://stackoverflow.com/a/596243
+                const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+
+                // If pixel's luminance is greater than the brightness cutoff, apply the filter to it!
+                const output = luminance >= cutoff ? 255 : 0;
+                data[i] = data[i + 1] = data[i + 2] = output;
+            }
+
+            // Apply changes to the image
+            context.putImageData(imageData, 0, 0);
+            img.src = canvas.toDataURL();
+        }
+
+        // Threshold filter's brightness cutoff slider
+        const sliderRowDiv = this.contentEl.createDiv({ cls: "threshold-modal-row-div" });
+        sliderRowDiv.createEl("b", { text: "Brightness cutoff: " })
+        const sliderInput = sliderRowDiv.createEl("input", {
+            cls: "threshold-modal-slider",
+            attr: {
+                type: "range",
+                min: "0",
+                max: "255",
+                value: "128"
+            }
+        });
+
+        // Numerical input field whose value is tied to the slider's, allowing for precise control
+        const numberInput = sliderRowDiv.createEl("input", {
+            cls: "threshold-modal-number-input",
+            attr: {
+                type: "number",
+                min: "0",
+                max: "255",
+                value: "128"
+            }
+        });
+
+        // Ensure that number input's value matches slider's value
+        sliderInput.addEventListener("input", () => {
+            numberInput.value = sliderInput.value;
+            applyThreshold(Number(sliderInput.value));
+        });
+
+        // Ensure that slider's value matches number input's value
+        numberInput.addEventListener("input", () => {
+            const clamped = Math.min(255, Math.max(0, Number(numberInput.value)));
+            sliderInput.value = clamped.toString();
+            numberInput.value = clamped.toString();
+            applyThreshold(clamped);
+        });
+
+        // Input field for output file's name
+        const nameInputRowDiv = this.contentEl.createDiv({ cls: "threshold-modal-row-div" });
+        nameInputRowDiv.createEl("b", { text: "Output file: ", });
+        const nameInput = nameInputRowDiv.createEl("input", {
+            type: "text",
+            value: this.file.name,
+            cls: "threshold-modal-input"
+        });
+
+        this.contentEl.createEl("button", {
+            text: "Apply",
+            cls: "threshold-modal-apply-button"
+        }).addEventListener("click", () => {
+            const fileExists = this.app.vault.getFileByPath(nameInput.value);
+            if (fileExists) {
+                new OverwriteConfirmModal(this.app, () => {
+                    console.debug("Applying threshold!");
+                }).open();
+            }
+            else {
+                console.debug("Applying threshold!");
+            }
+        });
+    }
+
+    // Clean up to avoid memory leaks
+    onClose(): void {
+        this.contentEl.empty();
+    }
+}
