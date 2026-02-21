@@ -166,10 +166,61 @@ export class ThresholdModal extends Modal {
 		this.titleEl.setText("Applying threshold filter");
 
 		// Create image preview with the right-clicked image
-		this.contentEl.createEl("img", {
+		const img = this.contentEl.createEl("img", {
 			attr: { src: this.app.vault.getResourcePath(this.file) },
 			cls: "threshold-modal-preview-image"
 		});
+
+		const canvas = this.contentEl.createEl("canvas", { cls: "threshold-modal-canvas" });
+		const context = canvas.getContext("2d")!;  // context is certain
+
+		let cleanImageData: ImageData;
+
+		img.addEventListener("load", () => {
+			canvas.width = img.naturalWidth;
+			canvas.height = img.naturalHeight;
+
+			// Draw the preview image onto the hidden Canvas element
+			context?.drawImage(img, 0, 0);
+			cleanImageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+			// Automatically apply basic threshold filter to image
+			previewThreshold(128);
+		}, { once: true });
+
+		// Render the applied threshold filter to the preview image
+		const previewThreshold = (cutoff: number) => {
+			// Avoid applying threshold if the image has not been loaded
+			if (!cleanImageData) return;
+
+			// Create a new pixel data array to avoid overwriting the original image's
+			const imageData = new ImageData(
+				new Uint8ClampedArray(cleanImageData.data),
+				cleanImageData.width,
+				cleanImageData.height
+			);
+			const data = imageData.data
+
+			// Check for pixel luminance and apply threshold to every pixel in the image that is greater than the cutoff
+			for (let i = 0; i < data.length; i += 4) {
+				// Grab pixel's RGB values (if present or default to 0 if not)
+				const r = data[i] ?? 0;
+				const g = data[i + 1] ?? 0;
+				const b = data[i + 2] ?? 0;
+
+				// Equation for converting a RGB value to its perceived luminance
+				// Source: https://stackoverflow.com/a/596243
+				const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+
+				// If pixel's luminance is greater than the brightness cutoff, apply the filter to it!
+				const output = luminance >= cutoff ? 255 : 0;
+				data[i] = data[i + 1] = data[i + 2] = output;
+			}
+
+			// Apply changes to the image
+			context.putImageData(imageData, 0, 0);
+			img.src = canvas.toDataURL();
+		}
 
 		// Threshold filter's brightness cutoff slider / number inputs
 		const sliderRowDiv = this.contentEl.createDiv({ cls: "threshold-modal-input-row-div" });
@@ -196,6 +247,7 @@ export class ThresholdModal extends Modal {
 		// Ensure that number input's value matches slider's value
 		sliderInput.addEventListener("input", () => {
 			numberInput.value = sliderInput.value;
+			previewThreshold(Number(sliderInput.value));
 		});
 
 		// Ensure that slider's value matches number input's value
@@ -203,6 +255,7 @@ export class ThresholdModal extends Modal {
 			const clamped = Math.min(255, Math.max(0, Number(numberInput.value)));
 			sliderInput.value = clamped.toString();
 			numberInput.value = clamped.toString();
+			previewThreshold(clamped);
 		});
 
 		// Input field for output file's name

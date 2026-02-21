@@ -9,6 +9,10 @@
     max-width: 100%;
 }
 
+.threshold-modal-canvas {
+    display: none;
+}
+
 .threshold-modal-input-row-div {
     display: flex;
     width: 100%;
