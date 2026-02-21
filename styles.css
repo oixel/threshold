@@ -33,10 +33,11 @@
     cursor: pointer;
 }
 
-.threshold-modal-apply-button,
-.threshold-modal-overwrite-button {
-    background-color: var(--interactive-accent) !important;
-    color: var(--text-on-accent) !important;
+/* Overwrite the apply buttons (this is the specific path according to Obsidian's inspect view) */
+button.threshold-modal-apply-button:not(.clickable-icon),
+button.threshold-modal-apply-button:not(.clickable-icon) {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
 }
 
 .threshold-modal-apply-button {
