@@ -162,25 +162,57 @@ export class ThresholdModal extends Modal {
 
 	// Once the DOM is ready, apply its content
 	onOpen() {
+		this.modalEl.addClass("threshold-modal");
 		this.titleEl.setText("Apply threshold");
-		this.titleEl.addClass("threshold-modal-title");
 
 		// Create image preview with the right-clicked image
-		const img = this.contentEl.createEl("img");
-		const src = this.app.vault.getResourcePath(this.file);
-		img.setAttribute("src", src);
-		img.addClass("threshold-modal-preview-image");
+		this.contentEl.createEl("img", {
+			attr: { src: this.app.vault.getResourcePath(this.file) },
+			cls: "threshold-modal-preview-image"
+		});
 
-		const inputRowDiv = this.contentEl.createDiv();
-		inputRowDiv.addClass("threshold-modal-input-row-div");
+		// Threshold filter's brightness cutoff slider / number inputs
+		const sliderRowDiv = this.contentEl.createDiv({ cls: "threshold-modal-input-row-div" });
+		sliderRowDiv.createEl("b", { text: "Brightness cutoff: " })
+		const sliderInput = sliderRowDiv.createEl("input", {
+			cls: "threshold-modal-slider",
+			attr: {
+				type: "range",
+				min: "0",
+				max: "255",
+				value: "128"
+			}
+		});
+		const numberInput = sliderRowDiv.createEl("input", {
+			cls: "threshold-modal-number-input",
+			attr: {
+				type: "number",
+				min: "0",
+				max: "255",
+				value: "128"
+			}
+		});
 
-		const label = this.contentEl.createEl("b", { text: "Output file: " })
-		label.addClass("threshold-modal-input-label");
-		inputRowDiv.appendChild(label);
+		// Ensure that number input's value matches slider's value
+		sliderInput.addEventListener("input", () => {
+			numberInput.value = sliderInput.value;
+		});
 
-		const nameInput = this.contentEl.createEl("input", { type: "text", value: this.file.name });
-		nameInput.addClass("threshold-modal-input");
-		inputRowDiv.appendChild(nameInput);
+		// Ensure that slider's value matches number input's value
+		numberInput.addEventListener("input", () => {
+			const clamped = Math.min(255, Math.max(0, Number(numberInput.value)));
+			sliderInput.value = clamped.toString();
+			numberInput.value = clamped.toString();
+		});
+
+		// Input field for output file's name
+		const nameInputRowDiv = this.contentEl.createDiv({ cls: "threshold-modal-input-row-div" });
+		nameInputRowDiv.createEl("b", { text: "Output file: ", });
+		nameInputRowDiv.createEl("input", {
+			type: "text",
+			value: this.file.name,
+			cls: "threshold-modal-input"
+		});
 	}
 
 	// Clean up to avoid memory leaks

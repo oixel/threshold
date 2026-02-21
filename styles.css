@@ -1,4 +1,9 @@
-.threshold-modal-title {}
+/* Gives a small vertical gap between all the elements in the modal */
+.threshold-modal .modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
 
 .threshold-modal-preview-image {
     max-width: 100%;
@@ -12,7 +17,9 @@
     gap: 10px;
 }
 
-.threshold-modal-input-label {}
+.threshold-modal-slider {
+    flex-grow: 1;
+}
 
 .threshold-modal-input {
     flex-grow: 1;
