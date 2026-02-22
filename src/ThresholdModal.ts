@@ -135,7 +135,7 @@ export class ThresholdModal extends Modal {
 
                         // Refresh the note after image gets modified
                         const leaf = this.app.workspace.getMostRecentLeaf();
-                        if (leaf && leaf.view instanceof MarkdownView) {
+                        if (leaf) {
                             // Append rebuildView functionality to leaf as it is a private Obsidian method and hidden from the public API
                             const rebuildLeaf = leaf as typeof leaf & { rebuildView: () => Promise<void> };
                             await rebuildLeaf.rebuildView();  // Refresh the note!
