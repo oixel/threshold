@@ -1,4 +1,4 @@
-import { TFile, Modal, App, Notice } from 'obsidian';
+import { TFile, Modal, App, Notice, MarkdownView } from 'obsidian';
 import { OverwriteConfirmModal } from 'OverwriteConfirmModal';
 
 export class ThresholdModal extends Modal {
@@ -132,7 +132,15 @@ export class ThresholdModal extends Modal {
                     // Overwrite or create new image depending on if the filename already exists
                     if (fileExists) {
                         await this.app.vault.modifyBinary(this.file, buffer);
-                        this.app.metadataCache.trigger("changed", this.file);
+
+                        // Refresh the note after image gets modified
+                        const leaf = this.app.workspace.getMostRecentLeaf();
+                        if (leaf && leaf.view instanceof MarkdownView) {
+                            // Append rebuildView functionality to leaf as it is a private Obsidian method and hidden from the public API
+                            const rebuildLeaf = leaf as typeof leaf & { rebuildView: () => Promise<void> };
+                            await rebuildLeaf.rebuildView();  // Refresh the note!
+                        }
+
                         new Notice("Applied threshold to original image.");
                     }
                     else {
@@ -161,12 +169,12 @@ export class ThresholdModal extends Modal {
             cls: "threshold-modal-apply-button"
         }).addEventListener("click", () => {
             void (async () => {
-                // If file with name already exists, then warn user before overwriting it
-                const folder = this.file.parent?.path === '/' ? '' : (this.file.parent?.path ?? '');
-                const path = folder ? `${folder}/${nameInput.value}` : nameInput.value;
+                // Determine file path of right-clicked image's source
+                const folder = this.file.parent?.path;
+                const path = (folder || folder === '/') ? `${folder}/${nameInput.value}` : nameInput.value;
                 const file = this.app.vault.getFileByPath(path);
-                console.warn("Path:", path);
-                console.warn("All vault files:", this.app.vault.getFiles().map(f => f.path));
+
+                // If file with name already exists, then warn user before overwriting it
                 if (file) new OverwriteConfirmModal(this.app, () => applyThreshold(true, path)).open();
                 else applyThreshold(false, path);
             })();
