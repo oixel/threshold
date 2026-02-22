@@ -1,4 +1,4 @@
-import { Plugin, Menu, TFile, Editor } from 'obsidian';
+import { Plugin, Menu, TFile } from 'obsidian';
 import { ThresholdModal } from 'ThresholdModal';
 
 export default class Threshold extends Plugin {

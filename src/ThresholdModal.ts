@@ -1,4 +1,4 @@
-import { TFile, Modal, App, Notice, MarkdownView } from 'obsidian';
+import { TFile, Modal, App, Notice } from 'obsidian';
 import { OverwriteConfirmModal } from 'OverwriteConfirmModal';
 
 export class ThresholdModal extends Modal {
