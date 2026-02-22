@@ -1,9 +1,8 @@
-import { TFile, Modal, App, MarkdownView } from 'obsidian';
+import { TFile, Modal, App, Notice } from 'obsidian';
 import { OverwriteConfirmModal } from 'OverwriteConfirmModal';
-import Threshold from 'main';
 
 export class ThresholdModal extends Modal {
-    constructor(app: App, private plugin: Threshold, private file: TFile) {
+    constructor(app: App, private file: TFile) {
         super(app);
     }
 
@@ -117,7 +116,7 @@ export class ThresholdModal extends Modal {
         });
 
         // Takes current canvas image and overwrites/creates an actual image file from it
-        const applyThreshold = (fileExists: boolean) => {
+        const applyThreshold = (fileExists: boolean, filePath: string) => {
             // Create an image blob object from the image contained within the canvas element
             canvas.toBlob((blob) => {
                 if (!blob) return;
@@ -133,9 +132,20 @@ export class ThresholdModal extends Modal {
                     // Overwrite or create new image depending on if the filename already exists
                     if (fileExists) {
                         await this.app.vault.modifyBinary(this.file, buffer);
+                        this.app.metadataCache.trigger("changed", this.file);
+                        new Notice("Applied threshold to original image.");
                     }
                     else {
-                        await this.app.vault.createBinary(nameInput.value, buffer);
+                        const newFile = await this.app.vault.createBinary(filePath, buffer);
+
+                        const activeFile = this.app.workspace.getActiveFile();
+                        if (activeFile) {
+                            const content = await this.app.vault.read(activeFile);
+                            const updated = content.replaceAll(this.file.basename, newFile.basename);
+                            await this.app.vault.modify(activeFile, updated);
+                        }
+
+                        new Notice(`Created new image with threshold applied: ${newFile.name}`);
                     }
 
                     this.close();  // Exit the threshold modal when done
@@ -150,10 +160,16 @@ export class ThresholdModal extends Modal {
             text: "Apply",
             cls: "threshold-modal-apply-button"
         }).addEventListener("click", () => {
-            // If file with name already exists, then warn user before overwriting it
-            const fileExists = this.app.vault.getFileByPath(nameInput.value) != null;
-            if (fileExists) new OverwriteConfirmModal(this.app, () => applyThreshold(fileExists)).open();
-            else applyThreshold(fileExists);
+            void (async () => {
+                // If file with name already exists, then warn user before overwriting it
+                const folder = this.file.parent?.path === '/' ? '' : (this.file.parent?.path ?? '');
+                const path = folder ? `${folder}/${nameInput.value}` : nameInput.value;
+                const file = this.app.vault.getFileByPath(path);
+                console.warn("Path:", path);
+                console.warn("All vault files:", this.app.vault.getFiles().map(f => f.path));
+                if (file) new OverwriteConfirmModal(this.app, () => applyThreshold(true, path)).open();
+                else applyThreshold(false, path);
+            })();
         });
     }
 

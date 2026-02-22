@@ -1,4 +1,4 @@
-import { Plugin, Menu, TFile, Editor, MarkdownView } from 'obsidian';
+import { Plugin, Menu, TFile, Editor } from 'obsidian';
 import { ThresholdModal } from 'ThresholdModal';
 
 export default class Threshold extends Plugin {
@@ -6,7 +6,7 @@ export default class Threshold extends Plugin {
 	clickedImage: {
 		element: HTMLElement;
 		src: string | null;
-		timestamp: number;  // Guards against timing issues by ensuring contextmenu was true recently
+		timestamp: number;  // Guards against timing issues by ensuring contextmenu was true recently,
 	} | null = null;
 
 	// Determines whether right-clicked file is a valid image type
@@ -56,7 +56,7 @@ export default class Threshold extends Plugin {
 							.setTitle("Apply threshold")
 							.setIcon("image")
 							.onClick(() => {
-								new ThresholdModal(this.app, this, file).open();
+								new ThresholdModal(this.app, file).open();
 							});
 					})
 				}
@@ -78,7 +78,7 @@ export default class Threshold extends Plugin {
 
 		// Add "Apply threshold" option when image was recently clicked
 		this.registerEvent(
-			this.app.workspace.on('editor-menu', (menu: Menu, editor: Editor, view: MarkdownView) => {
+			this.app.workspace.on('editor-menu', (menu: Menu) => {
 				const imageSnapshot = this.clickedImage;
 				this.clickedImage = null;  // Wipe clicked image after the menu gets built
 
@@ -97,7 +97,7 @@ export default class Threshold extends Plugin {
 							.onClick(async () => {
 								if (imageSnapshot.src) {
 									const imageFile = await this.getImageFile(imageSnapshot.src);
-									if (imageFile) new ThresholdModal(this.app, this, imageFile).open();
+									if (imageFile) new ThresholdModal(this.app, imageFile).open();
 								}
 							});
 					})
