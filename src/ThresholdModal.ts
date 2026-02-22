@@ -149,7 +149,7 @@ export class ThresholdModal extends Modal {
                         const activeFile = this.app.workspace.getActiveFile();
                         if (activeFile) {
                             const content = await this.app.vault.read(activeFile);
-                            const updated = content.replaceAll(this.file.basename, newFile.basename);
+                            const updated = content.replaceAll(this.file.name, newFile.name);
                             await this.app.vault.modify(activeFile, updated);
                         }
 
