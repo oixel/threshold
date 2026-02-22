@@ -177,7 +177,7 @@ export class ThresholdModal extends Modal {
                 // Determine file path of right-clicked image's source
                 const folder = this.file.parent?.path;
                 const filename = `${nameInput.value}.${this.file.extension}`
-                const path = (folder || folder === '/') ? `${folder}/${filename}` : filename;
+                const path = (folder && folder !== '/') ? `${folder}/${filename}` : filename;
                 const file = this.app.vault.getFileByPath(path);
 
                 // If file with name already exists, then warn user before overwriting it
