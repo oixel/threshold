@@ -1,11 +1,11 @@
 {
 	"id": "threshold",
 	"name": "Threshold",
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
 	"description": "Allows a threshold filter to be applied to images.",
 	"author": "oixel",
 	"authorUrl": "https://github.com/oixel",
 	"fundingUrl": "N/A",
-	"isDesktopOnly": false
+	"isDesktopOnly": true
 }
