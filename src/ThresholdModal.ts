@@ -1,4 +1,4 @@
-import { TFile, Modal, App } from 'obsidian';
+import { TFile, Modal, App, MarkdownView } from 'obsidian';
 import { OverwriteConfirmModal } from 'OverwriteConfirmModal';
 import Threshold from 'main';
 
@@ -32,11 +32,11 @@ export class ThresholdModal extends Modal {
             cleanImageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
             // Automatically apply basic threshold filter to image
-            applyThreshold(128);
+            previewThreshold(128);
         }, { once: true });
 
         // Render the applied threshold filter to the preview image
-        const applyThreshold = (cutoff: number) => {
+        const previewThreshold = (cutoff: number) => {
             // Avoid applying threshold if the image has not been loaded
             if (!cleanImageData) return;
 
@@ -96,7 +96,7 @@ export class ThresholdModal extends Modal {
         // Ensure that number input's value matches slider's value
         sliderInput.addEventListener("input", () => {
             numberInput.value = sliderInput.value;
-            applyThreshold(Number(sliderInput.value));
+            previewThreshold(Number(sliderInput.value));
         });
 
         // Ensure that slider's value matches number input's value
@@ -104,31 +104,56 @@ export class ThresholdModal extends Modal {
             const clamped = Math.min(255, Math.max(0, Number(numberInput.value)));
             sliderInput.value = clamped.toString();
             numberInput.value = clamped.toString();
-            applyThreshold(clamped);
+            previewThreshold(clamped);
         });
 
         // Input field for output file's name
         const nameInputRowDiv = this.contentEl.createDiv({ cls: "threshold-modal-row-div" });
-        nameInputRowDiv.createEl("b", { text: "Output file: ", });
+        nameInputRowDiv.createEl("b", { text: "Output file: " });
         const nameInput = nameInputRowDiv.createEl("input", {
             type: "text",
             value: this.file.name,
             cls: "threshold-modal-input"
         });
 
+        // Takes current canvas image and overwrites/creates an actual image file from it
+        const applyThreshold = (fileExists: boolean) => {
+            // Create an image blob object from the image contained within the canvas element
+            canvas.toBlob((blob) => {
+                if (!blob) return;
+
+                // Set up FileReader to read the canvas image's data blob
+                const reader = new FileReader();
+
+                // onload gets called after reader finishes reading (following reader.readAsArrayBuffer())
+                reader.onload = async () => {
+                    // Obsidian's modify/createBinary() methods require type of ArrayBuffer
+                    const buffer = reader.result as ArrayBuffer;
+
+                    // Overwrite or create new image depending on if the filename already exists
+                    if (fileExists) {
+                        await this.app.vault.modifyBinary(this.file, buffer);
+                    }
+                    else {
+                        await this.app.vault.createBinary(nameInput.value, buffer);
+                    }
+
+                    this.close();  // Exit the threshold modal when done
+                }
+
+                // Converts canvas image's data blob into an ArrayBuffer
+                reader.readAsArrayBuffer(blob);
+            }, "image/png");
+        };
+
         this.contentEl.createEl("button", {
             text: "Apply",
             cls: "threshold-modal-apply-button"
         }).addEventListener("click", () => {
-            const fileExists = this.app.vault.getFileByPath(nameInput.value);
-            if (fileExists) {
-                new OverwriteConfirmModal(this.app, () => {
-                    console.debug("Applying threshold!");
-                }).open();
-            }
-            else {
-                console.debug("Applying threshold!");
-            }
+            // If file with name already exists, then warn user before overwriting it
+            const fileExists = this.app.vault.getFileByPath(nameInput.value) != null;
+            if (fileExists) new OverwriteConfirmModal(this.app, () => applyThreshold(fileExists)).open();
+            else applyThreshold(fileExists);
         });
     }
 
