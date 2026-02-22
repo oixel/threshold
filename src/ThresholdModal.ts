@@ -149,11 +149,16 @@ export class ThresholdModal extends Modal {
                         const activeFile = this.app.workspace.getActiveFile();
                         if (activeFile) {
                             const content = await this.app.vault.read(activeFile);
+                            const imageCount = content.match(new RegExp(this.file.name, 'g'));
+
                             const updated = content.replaceAll(this.file.name, newFile.name);
                             await this.app.vault.modify(activeFile, updated);
-                        }
 
-                        new Notice(`Created new image with threshold applied: ${newFile.name}`);
+                            new Notice(`Created new image with threshold applied: ${newFile.name}`);
+
+                            // Warn user if multiple instances of this image get replaced
+                            if (imageCount && imageCount.length > 1) new Notice("Multiple instances of this image found in this note. All links have been updated.");
+                        }
                     }
 
                     this.close();  // Exit the threshold modal when done
