@@ -108,10 +108,10 @@ export class ThresholdModal extends Modal {
 
         // Input field for output file's name
         const nameInputRowDiv = this.contentEl.createDiv({ cls: "threshold-modal-row-div" });
-        nameInputRowDiv.createEl("b", { text: "Output file: " });
+        nameInputRowDiv.createEl("b", { text: "Output name: " });
         const nameInput = nameInputRowDiv.createEl("input", {
             type: "text",
-            value: this.file.name,
+            value: this.file.basename,
             cls: "threshold-modal-input"
         });
 
@@ -166,7 +166,7 @@ export class ThresholdModal extends Modal {
 
                 // Converts canvas image's data blob into an ArrayBuffer
                 reader.readAsArrayBuffer(blob);
-            }, "image/png");
+            }, `image/${this.file.extension.toLowerCase()}`);
         };
 
         this.contentEl.createEl("button", {
@@ -176,7 +176,8 @@ export class ThresholdModal extends Modal {
             void (async () => {
                 // Determine file path of right-clicked image's source
                 const folder = this.file.parent?.path;
-                const path = (folder || folder === '/') ? `${folder}/${nameInput.value}` : nameInput.value;
+                const filename = `${nameInput.value}.${this.file.extension}`
+                const path = (folder || folder === '/') ? `${folder}/${filename}` : filename;
                 const file = this.app.vault.getFileByPath(path);
 
                 // If file with name already exists, then warn user before overwriting it
