@@ -35,7 +35,7 @@ export default class Threshold extends Plugin {
 	}
 
 	// Get image file when a image is right-clicked inside of a note
-	async getImageFile(src: string): Promise<TFile | null> {
+	getImageFile(src: string): TFile | null {
 		const url = new URL(src);  // Obsidian uses paths like app://local/absolute/path/*.png
 		const path = decodeURIComponent((url.pathname));  // Strip protocol prefix and decode it
 
@@ -44,7 +44,7 @@ export default class Threshold extends Plugin {
 	}
 
 
-	async onload() {
+	onload() {
 		// Allows for right click in file explorer
 		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu: Menu, file: TFile) => {

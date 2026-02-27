@@ -173,7 +173,7 @@ export class ThresholdModal extends Modal {
             text: "Apply",
             cls: "threshold-modal-apply-button"
         }).addEventListener("click", () => {
-            void (async () => {
+            void (() => {
                 // Determine file path of right-clicked image's source
                 const folder = this.file.parent?.path;
                 const filename = `${nameInput.value}.${this.file.extension}`
