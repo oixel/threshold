@@ -96,7 +96,7 @@ export default class Threshold extends Plugin {
 							.setIcon("image")
 							.onClick(async () => {
 								if (imageSnapshot.src) {
-									const imageFile = await this.getImageFile(imageSnapshot.src);
+									const imageFile = this.getImageFile(imageSnapshot.src);
 									if (imageFile) new ThresholdModal(this.app, imageFile).open();
 								}
 							});
