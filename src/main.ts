@@ -94,7 +94,7 @@ export default class Threshold extends Plugin {
 						item
 							.setTitle("Apply threshold")
 							.setIcon("image")
-							.onClick(async () => {
+							.onClick(() => {
 								if (imageSnapshot.src) {
 									const imageFile = this.getImageFile(imageSnapshot.src);
 									if (imageFile) new ThresholdModal(this.app, imageFile).open();
@@ -106,11 +106,3 @@ export default class Threshold extends Plugin {
 		)
 	}
 }
-
-/*
-No, `!important` is generally considered a code smell — it's a blunt workaround rather than a real fix, and it makes styles harder to maintain and override later.
-
-The better approach is to inspect the button in dev tools and find the exact selector Obsidian is using to style it, then match or beat its specificity naturally. For example if Obsidian is using `.modal button`, you could use `.threshold-modal .modal-content button.threshold-modal-apply-button` which is more specific without needing `!important`.
-
-It's also worth checking that your `styles.css` is actually being loaded at all — add a obviously wrong style like `background-color: red` and see if it applies. If nothing changes at all, the file may not be getting picked up, which would explain why none of your button styles are working regardless of what you write.
-*/
